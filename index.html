@@ -1,0 +1,1502 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#0d0d0d">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="HabitForge">
+<title>HabitForge</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800;900&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ── TOKENS ── */
+:root{
+  --bg:#0d0d0d;--s1:#171717;--s2:#202020;--s3:#2a2a2a;
+  --bd:#303030;--neon:#00ff9d;--neon2:#00cc7a;
+  --ng:rgba(0,255,157,.2);--nd:rgba(0,255,157,.08);
+  --red:#ff3d5a;--amb:#ffb300;--blu:#29b6f6;
+  --wh:#f0f0f0;--gr:#888;--gd:#4a4a4a;
+  --r:14px;--rs:10px;--nav:66px;--hdr:54px;
+  --fd:'Barlow Condensed',sans-serif;--fb:'Barlow',sans-serif;
+  --ease:cubic-bezier(.4,0,.2,1);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden}
+body{font-family:var(--fb);background:var(--bg);color:var(--wh);
+  height:100dvh;-webkit-font-smoothing:antialiased;
+  -webkit-tap-highlight-color:transparent;user-select:none}
+#app{display:flex;flex-direction:column;height:100dvh}
+
+/* ── HEADER ── */
+.hdr{height:var(--hdr);min-height:var(--hdr);background:var(--bg);
+  border-bottom:1px solid var(--bd);display:flex;align-items:center;
+  padding:0 16px;z-index:60;flex-shrink:0}
+.logo{font-family:var(--fd);font-size:27px;font-weight:900;
+  color:var(--neon);text-transform:uppercase;letter-spacing:.03em;line-height:1}
+.logo span{color:var(--wh)}
+.hdr-day{margin-left:auto;background:var(--nd);border:1px solid rgba(0,255,157,.22);
+  border-radius:20px;padding:4px 13px;font-family:var(--fd);font-size:14px;
+  font-weight:700;color:var(--neon);letter-spacing:.07em}
+
+/* ── VIEWS ── */
+.view{display:none;flex:1;overflow-y:auto;overflow-x:hidden;
+  padding-bottom:calc(var(--nav)+10px);-webkit-overflow-scrolling:touch}
+.view.active{display:block}
+::-webkit-scrollbar{width:3px}
+::-webkit-scrollbar-thumb{background:var(--bd);border-radius:2px}
+
+/* ── BOTTOM NAV ── */
+#bnav{height:var(--nav);background:rgba(13,13,13,.96);
+  backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  border-top:1px solid var(--bd);display:flex;
+  position:fixed;bottom:0;left:0;right:0;z-index:100;
+  padding-bottom:env(safe-area-inset-bottom,0)}
+.nb{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:3px;background:none;border:none;color:var(--gd);font-family:var(--fb);
+  font-size:10px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;
+  cursor:pointer;transition:color .2s;padding:8px 0}
+.nb.on{color:var(--neon)}
+.nb svg{transition:transform .2s,filter .2s}
+.nb.on svg{transform:scale(1.1);filter:drop-shadow(0 0 5px var(--neon))}
+.nb-dot{width:4px;height:4px;border-radius:50%;background:var(--neon);
+  opacity:0;transition:opacity .2s;margin-top:1px}
+.nb.on .nb-dot{opacity:1}
+
+/* ── GREETING ── */
+.greet{background:linear-gradient(140deg,#0a1810 0%,#111 55%);
+  border-bottom:1px solid var(--bd);padding:18px 16px 20px;position:relative;overflow:hidden}
+.greet::after{content:'';position:absolute;right:-30px;top:-30px;width:160px;height:160px;
+  border-radius:50%;background:radial-gradient(circle,rgba(0,255,157,.09) 0%,transparent 70%);pointer-events:none}
+.gt-lbl{font-size:11px;color:var(--gr);font-weight:500;letter-spacing:.1em;text-transform:uppercase}
+.gt-name{font-family:var(--fd);font-size:36px;font-weight:900;line-height:1;letter-spacing:.02em;margin-top:2px}
+.gt-name em{color:var(--neon);font-style:normal}
+.gt-sub{font-size:13px;color:var(--gr);margin-top:5px}
+.gt-streak{display:inline-flex;align-items:center;gap:6px;margin-top:10px;
+  background:rgba(0,255,157,.1);border:1px solid rgba(0,255,157,.28);
+  border-radius:20px;padding:5px 13px;font-family:var(--fd);font-size:14px;font-weight:700;color:var(--neon)}
+
+/* ── QUICK STATS ── */
+.qrow{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;
+  background:var(--bd);border-bottom:1px solid var(--bd)}
+.qc{background:var(--s1);padding:14px 8px;text-align:center}
+.qn{font-family:var(--fd);font-size:28px;font-weight:900;line-height:1}
+.qn.g{color:var(--neon)}
+.ql{font-size:10px;color:var(--gr);text-transform:uppercase;letter-spacing:.06em;margin-top:3px}
+
+/* ── SECTION HDR ── */
+.shdr{padding:16px 16px 8px;display:flex;align-items:center;justify-content:space-between}
+.shdr-t{font-family:var(--fd);font-size:19px;font-weight:800;text-transform:uppercase;letter-spacing:.04em}
+
+/* ── CARD ── */
+.card{margin:0 16px 14px;background:var(--s1);border:1px solid var(--bd);border-radius:var(--r);overflow:hidden}
+.card-hdr{padding:14px 16px 12px;border-bottom:1px solid var(--bd)}
+.card-t{font-family:var(--fd);font-size:16px;font-weight:800;text-transform:uppercase;
+  letter-spacing:.07em;color:var(--neon);display:flex;align-items:center;gap:7px;margin-bottom:12px}
+
+/* ── WEIGHT ── */
+.wrow{display:flex;gap:10px;align-items:stretch}
+.wwrap{flex:1;position:relative}
+.win{width:100%;background:var(--s2);border:1.5px solid var(--bd);border-radius:var(--rs);
+  color:var(--wh);font-family:var(--fd);font-size:28px;font-weight:700;
+  padding:10px 50px 10px 14px;outline:none;transition:border-color .2s;
+  -webkit-appearance:none;-moz-appearance:textfield}
+.win::-webkit-outer-spin-button,.win::-webkit-inner-spin-button{-webkit-appearance:none}
+.win:focus{border-color:var(--neon)}
+.wunit{position:absolute;right:12px;top:50%;transform:translateY(-50%);
+  font-size:13px;color:var(--gr);font-weight:600}
+.blog{background:var(--neon);color:#000;font-family:var(--fd);font-size:16px;
+  font-weight:900;letter-spacing:.06em;text-transform:uppercase;border:none;
+  border-radius:var(--rs);padding:0 20px;cursor:pointer;
+  box-shadow:0 0 16px var(--ng);transition:transform .12s,box-shadow .12s;white-space:nowrap}
+.blog:active{transform:scale(.95);box-shadow:none}
+.card-chart{padding:10px 14px 14px}
+#wc{width:100%;height:70px;display:block;overflow:visible}
+
+/* ── STEPS / WALK CARD ── */
+/* Big live stats row */
+.walk-live{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;
+  background:var(--bd);border-bottom:1px solid var(--bd)}
+.wl-cell{background:var(--s2);padding:14px 10px;text-align:center}
+.wl-num{font-family:var(--fd);font-size:26px;font-weight:900;color:var(--wh);line-height:1}
+.wl-num.neon{color:var(--neon)}
+.wl-lbl{font-size:10px;color:var(--gr);text-transform:uppercase;letter-spacing:.06em;margin-top:3px}
+
+/* Ring + detail */
+.stb{padding:16px;display:flex;gap:16px;align-items:center}
+.rw{position:relative;width:90px;height:90px;flex-shrink:0}
+.rsv{width:90px;height:90px;transform:rotate(-90deg)}
+.rb{fill:none;stroke:var(--s3);stroke-width:9}
+.rf{fill:none;stroke:var(--neon);stroke-width:9;stroke-linecap:round;
+  transition:stroke-dashoffset .5s var(--ease);filter:drop-shadow(0 0 5px var(--neon))}
+.ri{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.rin{font-family:var(--fd);font-size:18px;font-weight:900;line-height:1}
+.ris{font-size:9px;color:var(--gr);margin-top:2px}
+
+.sinf{flex:1;display:flex;flex-direction:column;gap:8px}
+.sir{display:flex;flex-direction:column}
+.sil{font-size:10px;color:var(--gr);text-transform:uppercase;letter-spacing:.07em}
+.siv{font-family:var(--fd);font-size:22px;font-weight:800;line-height:1.1}
+.siv small{font-size:12px;color:var(--gr);font-family:var(--fb);font-weight:400}
+
+/* Walk button row */
+.walk-btn-row{padding:14px 16px;border-top:1px solid var(--bd);display:flex;flex-direction:column;gap:10px}
+.bwalk{width:100%;padding:15px;border:none;border-radius:var(--rs);
+  font-family:var(--fd);font-size:18px;font-weight:900;letter-spacing:.07em;
+  text-transform:uppercase;cursor:pointer;
+  transition:transform .12s,background .3s,box-shadow .12s}
+.bwalk.go{background:var(--neon);color:#000;box-shadow:0 0 22px var(--ng)}
+.bwalk.stop{background:var(--red);color:#fff;box-shadow:0 0 22px rgba(255,61,90,.3)}
+.bwalk:active{transform:scale(.97);box-shadow:none}
+.bwalk:disabled{background:var(--s3);color:var(--gd);box-shadow:none;cursor:not-allowed}
+
+/* Status bar under button */
+.walk-status-bar{background:var(--s2);border-radius:var(--rs);padding:11px 14px;
+  font-size:13px;color:var(--gr);text-align:center;line-height:1.5;
+  border:1px solid var(--bd);min-height:42px;display:flex;align-items:center;justify-content:center}
+.walk-status-bar.active{color:var(--neon);border-color:rgba(0,255,157,.25);
+  background:rgba(0,255,157,.05)}
+.walk-status-bar.error{color:var(--red);border-color:rgba(255,61,90,.25)}
+
+/* GPS accuracy badge */
+.gps-acc{display:inline-flex;align-items:center;gap:5px;
+  font-size:11px;color:var(--gr);margin-top:4px}
+.gps-dot{width:8px;height:8px;border-radius:50%;background:var(--gd)}
+.gps-dot.good{background:#4caf50}
+.gps-dot.ok{background:var(--amb)}
+.gps-dot.bad{background:var(--red)}
+
+/* Walk history */
+.walk-hist{padding:0 16px 14px}
+.wh-title{font-size:11px;color:var(--gr);text-transform:uppercase;letter-spacing:.08em;
+  font-weight:600;margin-bottom:8px}
+.wh-row{display:flex;justify-content:space-between;align-items:center;
+  padding:9px 12px;background:var(--s2);border-radius:6px;margin-bottom:5px;
+  font-size:13px}
+.wh-date{color:var(--gr)}
+.wh-val{font-family:var(--fd);font-size:15px;font-weight:700;color:var(--neon)}
+
+/* Permission banner */
+.perm-banner{margin:0 16px 12px;padding:13px 16px;
+  background:rgba(41,182,246,.08);border:1px solid rgba(41,182,246,.3);
+  border-radius:var(--rs);display:flex;align-items:center;gap:12px}
+.perm-txt{flex:1;font-size:13px;color:var(--blu);line-height:1.4}
+.perm-btn{background:var(--blu);color:#000;border:none;border-radius:6px;
+  padding:8px 14px;font-family:var(--fd);font-size:13px;font-weight:800;
+  letter-spacing:.05em;text-transform:uppercase;cursor:pointer;white-space:nowrap}
+
+/* ── CATEGORY BLOCK ── */
+.catb{margin:0 16px 12px}
+.cath{background:var(--s1);border:1px solid var(--bd);border-radius:var(--r) var(--r) 0 0;
+  display:flex;align-items:center;gap:11px;padding:14px 16px;cursor:pointer;transition:background .15s}
+.cath:active{background:var(--s2)}
+.catb:not(.open) .cath{border-radius:var(--r)}
+.cem{font-size:20px;flex-shrink:0}
+.cnm{flex:1;font-family:var(--fd);font-size:17px;font-weight:800;
+  text-transform:uppercase;letter-spacing:.05em}
+.crt{display:flex;align-items:center;gap:10px}
+.cpr{position:relative;width:34px;height:34px}
+.cpsv{width:34px;height:34px;transform:rotate(-90deg)}
+.cpb{fill:none;stroke:var(--s3);stroke-width:4}
+.cpf{fill:none;stroke:var(--neon);stroke-width:4;stroke-linecap:round;transition:stroke-dashoffset .5s var(--ease)}
+.cpn{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  font-size:8px;font-weight:800;color:var(--neon)}
+.cchev{color:var(--gd);transition:transform .3s var(--ease)}
+.catb.open .cchev{transform:rotate(180deg)}
+.catbody{background:var(--s1);border-left:1px solid var(--bd);border-right:1px solid var(--bd);
+  border-bottom:1px solid var(--bd);border-radius:0 0 var(--r) var(--r);
+  max-height:0;overflow:hidden;transition:max-height .38s var(--ease)}
+.catb.open .catbody{max-height:3000px}
+
+/* ── HABIT ROW ── */
+.hr{display:flex;align-items:center;border-top:1px solid var(--bd);
+  background:var(--s1);transition:background .15s;min-height:58px}
+.hr:first-child{border-top:none}
+.hcz{width:56px;display:flex;align-items:center;justify-content:center;
+  cursor:pointer;align-self:stretch;flex-shrink:0}
+.hcb{width:28px;height:28px;border-radius:8px;border:2px solid var(--bd);
+  background:transparent;display:flex;align-items:center;justify-content:center;
+  transition:all .18s;position:relative;overflow:hidden}
+.hcb.done{border-color:var(--neon);background:var(--neon);box-shadow:0 0 10px var(--ng)}
+.hcb.done::after{content:'';display:block;width:10px;height:6px;
+  border-left:2.5px solid #000;border-bottom:2.5px solid #000;
+  transform:rotate(-45deg) translate(1px,-1px)}
+.hcm{display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer}
+.hcp{width:30px;height:30px;border-radius:50%;border:2px solid var(--neon);
+  display:flex;align-items:center;justify-content:center;
+  font-size:18px;font-weight:700;color:var(--neon);transition:all .15s;line-height:1}
+.hcp.done{background:var(--neon);color:#000;box-shadow:0 0 10px var(--ng)}
+.hcr{font-family:var(--fd);font-size:11px;font-weight:900;color:var(--neon)}
+.hiz{flex:1;padding:11px 4px;min-width:0}
+.hin{font-size:14px;font-weight:600;color:var(--wh);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transition:color .15s}
+.hin.done{color:var(--gd);text-decoration:line-through}
+.him{display:flex;align-items:center;gap:6px;margin-top:3px;flex-wrap:wrap}
+.hisk{font-size:11px;color:var(--gr)}
+.hifr{font-size:9px;background:var(--s3);border-radius:3px;
+  padding:2px 5px;color:var(--gr);text-transform:uppercase;letter-spacing:.04em;font-weight:600}
+.htime{font-size:9px;color:var(--neon2);font-weight:700;
+  background:rgba(0,255,157,.1);border-radius:3px;padding:2px 5px;margin-top:3px;display:inline-block}
+.haz{display:flex;align-items:center;padding-right:8px;flex-shrink:0}
+.hab{background:none;border:none;padding:9px 6px;cursor:pointer;
+  color:var(--gd);font-size:15px;transition:color .15s;border-radius:6px}
+.hab:active{color:var(--wh);background:var(--s3)}
+.catfoot{border-top:1px solid var(--bd);background:var(--s2)}
+.caddbtn{width:100%;padding:13px 16px;background:none;border:none;
+  color:var(--neon);font-family:var(--fd);font-size:15px;font-weight:800;
+  text-transform:uppercase;letter-spacing:.07em;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;gap:8px;transition:background .15s}
+.caddbtn:active{background:var(--nd)}
+.cadic{width:22px;height:22px;border-radius:50%;border:2px solid var(--neon);
+  display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;line-height:1}
+
+/* ── PROGRESS ── */
+.ph{margin:16px;background:linear-gradient(135deg,var(--s1) 0%,#0a1810 100%);
+  border:1px solid rgba(0,255,157,.18);border-radius:var(--r);padding:24px;text-align:center}
+.phn{font-family:var(--fd);font-size:72px;font-weight:900;color:var(--neon);
+  line-height:1;text-shadow:0 0 28px rgba(0,255,157,.35)}
+.phl{font-size:13px;color:var(--gr);margin-top:4px;letter-spacing:.08em;text-transform:uppercase}
+.pgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:0 16px 16px}
+.pgc{background:var(--s1);border:1px solid var(--bd);border-radius:var(--rs);padding:16px;text-align:center}
+.pgn{font-family:var(--fd);font-size:34px;font-weight:900}
+.pgl{font-size:10px;color:var(--gr);text-transform:uppercase;letter-spacing:.06em;margin-top:3px}
+.pbs{margin:0 16px 14px}
+.pbh{display:flex;justify-content:space-between;font-size:12px;color:var(--gr);margin-bottom:7px;font-weight:500}
+.pbt{height:12px;background:var(--s2);border-radius:6px;overflow:hidden}
+.pbf{height:100%;border-radius:6px;background:linear-gradient(90deg,var(--neon2),var(--neon));
+  transition:width .9s var(--ease);box-shadow:0 0 8px var(--ng)}
+.pcatsec{margin:0 16px 16px}
+.pcr{display:flex;align-items:center;gap:12px;padding:12px 14px;
+  background:var(--s1);border:1px solid var(--bd);border-radius:var(--rs);margin-bottom:8px}
+.pce{font-size:20px}
+.pci{flex:1}
+.pcin{font-family:var(--fd);font-size:15px;font-weight:700;text-transform:uppercase;letter-spacing:.04em}
+.pct{height:6px;background:var(--s3);border-radius:3px;margin-top:6px;overflow:hidden}
+.pcf{height:100%;border-radius:3px;background:var(--neon);transition:width .7s var(--ease)}
+.pcp{font-family:var(--fd);font-size:18px;font-weight:900;color:var(--neon)}
+.pq{margin:0 16px 20px;background:var(--nd);border:1px solid rgba(0,255,157,.18);
+  border-radius:var(--rs);padding:16px;text-align:center;font-size:14px;
+  font-style:italic;color:var(--wh);line-height:1.6}
+
+/* ── ADD TAB ── */
+.asplash{display:flex;flex-direction:column;align-items:center;
+  justify-content:center;min-height:55vh;gap:14px;padding:24px}
+.afab{width:84px;height:84px;border-radius:50%;background:var(--neon);border:none;
+  display:flex;align-items:center;justify-content:center;cursor:pointer;
+  font-size:38px;color:#000;box-shadow:0 0 32px rgba(0,255,157,.42);
+  transition:transform .15s,box-shadow .15s}
+.afab:active{transform:scale(.93);box-shadow:none}
+.aor{font-family:var(--fd);font-size:13px;font-weight:700;color:var(--gd);
+  text-transform:uppercase;letter-spacing:.08em}
+.acl{width:100%;max-width:340px;display:flex;flex-direction:column;gap:8px}
+.acb{width:100%;padding:13px 18px;background:var(--s1);border:1px solid var(--bd);
+  border-radius:var(--rs);color:var(--wh);font-family:var(--fd);font-size:16px;
+  font-weight:700;letter-spacing:.05em;text-transform:uppercase;cursor:pointer;
+  display:flex;align-items:center;gap:12px;transition:border-color .2s,background .2s}
+.acb:active{background:var(--s2);border-color:var(--neon)}
+.anote{font-size:12px;color:var(--gd);text-align:center;line-height:1.6;max-width:280px}
+
+/* ── BOTTOM SHEET ── */
+.sov{position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.78);
+  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  display:none;align-items:flex-end}
+.sov.open{display:flex}
+.sht{width:100%;max-width:520px;margin:auto auto 0;background:var(--s1);
+  border-radius:var(--r) var(--r) 0 0;border:1px solid var(--bd);border-bottom:none;
+  padding:0 20px 36px;transform:translateY(100%);transition:transform .38s var(--ease)}
+.sov.open .sht{transform:translateY(0)}
+.sh{width:40px;height:4px;background:var(--bd);border-radius:2px;margin:14px auto 20px}
+.st{font-family:var(--fd);font-size:22px;font-weight:900;text-transform:uppercase;
+  letter-spacing:.06em;color:var(--neon);margin-bottom:20px}
+.fg{margin-bottom:14px}
+.fl{display:block;font-size:11px;color:var(--gr);text-transform:uppercase;
+  letter-spacing:.08em;margin-bottom:7px;font-weight:600}
+.fi,.fse{width:100%;background:var(--s2);border:1.5px solid var(--bd);border-radius:var(--rs);
+  color:var(--wh);font-family:var(--fb);font-size:15px;padding:12px 14px;
+  outline:none;transition:border-color .2s;-webkit-appearance:none;appearance:none}
+.fi:focus,.fse:focus{border-color:var(--neon)}
+.fse{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='7'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23666' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 14px center;padding-right:36px}
+.togrow{display:flex;border:1.5px solid var(--bd);border-radius:var(--rs);overflow:hidden}
+.togo{flex:1;padding:11px 8px;background:none;border:none;color:var(--gr);
+  font-family:var(--fd);font-size:14px;font-weight:700;letter-spacing:.05em;
+  text-transform:uppercase;cursor:pointer;transition:background .15s,color .15s}
+.togo.sel{background:var(--neon);color:#000}
+.togsep{width:1px;background:var(--bd);flex-shrink:0}
+.sbtns{display:flex;gap:10px;margin-top:20px}
+.sbc{flex:1;padding:14px;border-radius:var(--rs);background:var(--s2);
+  border:1px solid var(--bd);color:var(--gr);font-family:var(--fd);font-size:15px;
+  font-weight:700;letter-spacing:.05em;cursor:pointer;text-transform:uppercase}
+.sbd{flex:1;padding:14px;border-radius:var(--rs);background:rgba(255,61,90,.1);
+  border:1px solid rgba(255,61,90,.3);color:var(--red);font-family:var(--fd);
+  font-size:15px;font-weight:700;letter-spacing:.05em;cursor:pointer;text-transform:uppercase}
+.sbs{flex:2;padding:14px;border-radius:var(--rs);background:var(--neon);border:none;
+  color:#000;font-family:var(--fd);font-size:16px;font-weight:900;letter-spacing:.07em;
+  cursor:pointer;text-transform:uppercase;box-shadow:0 0 16px var(--ng)}
+.sbc:active,.sbd:active{opacity:.7}
+.sbs:active{transform:scale(.97)}
+
+/* ── CONFETTI ── */
+#confetti{position:fixed;inset:0;pointer-events:none;z-index:400;display:none}
+
+/* ── TOAST ── */
+.toast{position:fixed;bottom:calc(var(--nav)+16px);left:16px;right:16px;z-index:350;
+  background:var(--s1);border:1px solid var(--neon);border-radius:var(--r);
+  padding:14px 18px;display:flex;align-items:center;gap:12px;
+  box-shadow:0 0 24px var(--ng);transform:translateY(12px);opacity:0;
+  pointer-events:none;transition:transform .35s var(--ease),opacity .35s var(--ease)}
+.toast.show{transform:translateY(0);opacity:1}
+.ti{font-size:26px;flex-shrink:0}
+.tt{font-family:var(--fd);font-size:16px;font-weight:900;color:var(--neon)}
+.tm{font-size:12px;color:var(--gr);margin-top:2px}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- HEADER -->
+  <header class="hdr">
+    <div class="logo">Habit<span>Forge</span></div>
+    <div class="hdr-day" id="hdr-day">DAY 1</div>
+  </header>
+
+  <!-- HOME -->
+  <div class="view active" id="view-home">
+
+    <div class="greet">
+      <div class="gt-lbl" id="gt-lbl">Good morning</div>
+      <div class="gt-name">Hey, <em id="gt-name">Champ</em></div>
+      <div class="gt-sub">Day <span id="gt-day">1</span> — let's crush it! 💪</div>
+      <div class="gt-streak">🔥 <span id="gt-streak">0</span> day streak</div>
+    </div>
+
+    <div class="qrow">
+      <div class="qc"><div class="qn g" id="qs-done">0</div><div class="ql">Done Today</div></div>
+      <div class="qc"><div class="qn" id="qs-total">0</div><div class="ql">Total</div></div>
+      <div class="qc"><div class="qn" id="qs-pct">0%</div><div class="ql">Complete</div></div>
+    </div>
+
+    <!-- WEIGHT -->
+    <div class="shdr"><div class="shdr-t">⚖️ Body Weight</div></div>
+    <div class="card">
+      <div class="card-hdr">
+        <div class="card-t">Weight Log</div>
+        <div class="wrow">
+          <div class="wwrap">
+            <input class="win" type="number" id="win" placeholder="0.0"
+              step="0.1" min="50" max="700" inputmode="decimal">
+            <span class="wunit">lbs</span>
+          </div>
+          <button class="blog" onclick="logWeight()">LOG</button>
+        </div>
+      </div>
+      <div class="card-chart">
+        <svg id="wc" viewBox="0 0 320 70" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+          <defs><linearGradient id="cg" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#00ff9d" stop-opacity=".3"/>
+            <stop offset="100%" stop-color="#00ff9d" stop-opacity="0"/>
+          </linearGradient></defs>
+          <text x="160" y="38" text-anchor="middle" fill="#444" font-size="11" font-family="Barlow,sans-serif">Log weight to see chart</text>
+        </svg>
+      </div>
+    </div>
+
+    <!-- STEPS & WALK CARD -->
+    <div class="shdr"><div class="shdr-t">👟 Steps &amp; Active Tracking</div></div>
+    <div class="card" id="walk-card">
+
+      <!-- Live stats: always visible -->
+      <div class="walk-live">
+        <div class="wl-cell">
+          <div class="wl-num neon" id="wl-steps">0</div>
+          <div class="wl-lbl">Steps</div>
+        </div>
+        <div class="wl-cell">
+          <div class="wl-num" id="wl-dist">0.00</div>
+          <div class="wl-lbl">Miles</div>
+        </div>
+        <div class="wl-cell">
+          <div class="wl-num" id="wl-time">0:00</div>
+          <div class="wl-lbl">Walk Time</div>
+        </div>
+      </div>
+
+      <!-- Ring + detail -->
+      <div class="stb">
+        <div class="rw">
+          <svg class="rsv" viewBox="0 0 90 90" xmlns="http://www.w3.org/2000/svg">
+            <circle class="rb" cx="45" cy="45" r="37"/>
+            <circle class="rf" id="sring" cx="45" cy="45" r="37"
+              stroke-dasharray="232.5" stroke-dashoffset="232.5"/>
+          </svg>
+          <div class="ri">
+            <div class="rin" id="sdisp">0</div>
+            <div class="ris">/ 10K goal</div>
+          </div>
+        </div>
+        <div class="sinf">
+          <div class="sir">
+            <div class="sil">Pace</div>
+            <div class="siv" id="wl-pace">–– <small>min/mi</small></div>
+          </div>
+          <div class="sir">
+            <div class="sil">GPS Signal</div>
+            <div class="gps-acc">
+              <div class="gps-dot" id="gps-dot"></div>
+              <span id="gps-txt">Not started</span>
+            </div>
+          </div>
+          <div class="sir">
+            <div class="sil">Walk Distance</div>
+            <div class="siv" id="wl-walkdist">0.00 <small>mi</small></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Buttons -->
+      <div class="walk-btn-row">
+        <button class="bwalk go" id="wbtn" onclick="handleWalkBtn()">▶ Start Walk / Run</button>
+        <div class="walk-status-bar" id="wstatus">
+          Tap to begin GPS tracking. Allow location when prompted.
+        </div>
+        <!-- GPS accuracy hint shown during walk -->
+        <div id="acc-hint" style="display:none;font-size:11px;color:var(--gr);text-align:center">
+          GPS accuracy: <span id="acc-val">–</span> ft &nbsp;·&nbsp; Points recorded: <span id="pts-val">0</span>
+        </div>
+      </div>
+
+      <!-- Walk history -->
+      <div class="walk-hist" id="walk-hist"></div>
+    </div>
+
+    <!-- iOS motion permission banner (shown if needed) -->
+    <div class="perm-banner" id="motion-banner" style="display:none">
+      <div class="perm-txt">📱 Allow motion access for step counting</div>
+      <button class="perm-btn" onclick="reqMotion()">Enable</button>
+    </div>
+
+    <!-- Categories -->
+    <div class="shdr"><div class="shdr-t">📋 Habit Categories</div></div>
+    <div id="catcon"></div>
+    <div style="height:8px"></div>
+  </div>
+
+  <!-- PROGRESS -->
+  <div class="view" id="view-progress">
+    <div class="ph"><div class="phn" id="p-str">0</div><div class="phl">Total Streak Days</div></div>
+    <div class="pgrid">
+      <div class="pgc"><div class="pgn" id="p-done">0</div><div class="pgl">Done Today</div></div>
+      <div class="pgc"><div class="pgn" id="p-tot">0</div><div class="pgl">Total Habits</div></div>
+      <div class="pgc"><div class="pgn" id="p-wk">0</div><div class="pgl">This Week</div></div>
+      <div class="pgc"><div class="pgn" id="p-perf">0</div><div class="pgl">Perfect Days</div></div>
+    </div>
+    <div class="pbs"><div class="pbh"><span>Today's Progress</span><span id="p-pct">0%</span></div>
+      <div class="pbt"><div class="pbf" id="p-fill" style="width:0"></div></div></div>
+    <div class="pbs"><div class="pbh"><span>Weekly Average</span><span id="p-wpct">0%</span></div>
+      <div class="pbt"><div class="pbf" id="p-wfill" style="width:0"></div></div></div>
+    <div class="shdr"><div class="shdr-t">By Category</div></div>
+    <div class="pcatsec" id="pcats"></div>
+    <div class="pq" id="pquote">"Beast mode — stacking wins every single day."</div>
+  </div>
+
+  <!-- ADD -->
+  <div class="view" id="view-add">
+    <div class="asplash">
+      <button class="afab" onclick="openAdd(null)">+</button>
+      <div class="aor">or pick a category</div>
+      <div class="acl" id="acl"></div>
+      <div class="anote">Once Daily = single checkbox. Reps/Sets = tap + each time you complete a set.</div>
+    </div>
+  </div>
+</div>
+
+<!-- NAV -->
+<nav id="bnav">
+  <button class="nb on" id="nb-home" onclick="sw('home')">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    Home<div class="nb-dot"></div>
+  </button>
+  <button class="nb" id="nb-progress" onclick="sw('progress')">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+    Progress<div class="nb-dot"></div>
+  </button>
+  <button class="nb" id="nb-add" onclick="sw('add')">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+    Add<div class="nb-dot"></div>
+  </button>
+</nav>
+
+<!-- HABIT SHEET -->
+<div class="sov" id="hsheet" onclick="sbg(event,'hsheet')">
+  <div class="sht">
+    <div class="sh"></div>
+    <div class="st" id="hs-title">New Habit</div>
+    <input type="hidden" id="hs-id">
+    <div class="fg"><label class="fl">Habit Name</label>
+      <input class="fi" type="text" id="hs-name" placeholder="e.g. Morning stretch"></div>
+    <div class="fg"><label class="fl">Category</label>
+      <select class="fse" id="hs-cat">
+        <option value="Weight &amp; Diet">⚖️ Weight &amp; Diet</option>
+        <option value="Energy &amp; Brain">⚡ Energy &amp; Brain</option>
+        <option value="Knees &amp; Mobility">🦵 Knees &amp; Mobility</option>
+        <option value="Mind &amp; Life">🧠 Mind &amp; Life</option>
+        <option value="Extras">✨ Extras</option>
+        <option value="Steps &amp; Walks">👟 Steps &amp; Walks</option>
+      </select></div>
+    <div class="fg"><label class="fl">Frequency</label>
+      <select class="fse" id="hs-freq">
+        <option value="daily">Daily</option>
+        <option value="weekdays">Weekdays</option>
+        <option value="weekends">Weekends</option>
+        <option value="weekly">Weekly</option>
+      </select></div>
+    <div class="fg"><label class="fl">Type</label>
+      <div class="togrow">
+        <button class="togo sel" id="tog-once" onclick="setRM('once')">✓ Once Daily</button>
+        <div class="togsep"></div>
+        <button class="togo" id="tog-multi" onclick="setRM('multi')">🔁 Reps / Sets</button>
+      </div></div>
+    <div class="fg" id="rg" style="display:none"><label class="fl">Daily Rep Goal</label>
+      <input class="fi" type="number" id="hs-reps" placeholder="e.g. 3" min="1" max="99" inputmode="numeric" value="3"></div>
+    <div class="sbtns" id="hs-btns">
+      <button class="sbc" onclick="closeS('hsheet')">Cancel</button>
+      <button class="sbs" onclick="saveH()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- DELETE SHEET -->
+<div class="sov" id="dsheet" onclick="sbg(event,'dsheet')">
+  <div class="sht">
+    <div class="sh"></div>
+    <div class="st" style="color:var(--red)">Delete Habit?</div>
+    <p style="color:var(--gr);font-size:14px;line-height:1.6;margin-bottom:20px">
+      Remove <strong id="del-nm" style="color:var(--wh)"></strong>? This can't be undone.</p>
+    <div class="sbtns">
+      <button class="sbc" onclick="closeS('dsheet')">Cancel</button>
+      <button class="sbd" onclick="doDelete()">Delete</button>
+    </div>
+  </div>
+</div>
+
+<canvas id="confetti"></canvas>
+<div class="toast" id="toast">
+  <div class="ti" id="ti">🏆</div>
+  <div><div class="tt" id="tt">Done!</div><div class="tm" id="tm"></div></div>
+</div>
+
+<script>
+/* ════════════════════════════════════════════════════
+   HABITFORGE — complete app script
+   ════════════════════════════════════════════════════ */
+
+// ── CONSTANTS ──────────────────────────────────────────
+const KEY     = 'hfv6';
+const STEP_G  = 10000;         // step goal
+const FT_STEP = 2.5;           // feet per step (avg)
+const FT_MI   = 5280;          // feet per mile
+const MIN_DIST_M = 3;          // min GPS movement in meters to count (filters GPS jitter)
+const MIN_ACC_M  = 30;         // only accept GPS points with accuracy <= 30m
+
+const CATS = {
+  'Weight & Diet':    {e:'⚖️'},
+  'Energy & Brain':   {e:'⚡'},
+  'Knees & Mobility': {e:'🦵'},
+  'Mind & Life':      {e:'🧠'},
+  'Extras':           {e:'✨'},
+  'Steps & Walks':    {e:'👟'}
+};
+
+const DEFAULTS = [
+  {id:'h1', name:'IF window (noon–8pm)',         cat:'Weight & Diet',    freq:'daily',   type:'once'},
+  {id:'h2', name:'Creatine 5g',                  cat:'Weight & Diet',    freq:'daily',   type:'once'},
+  {id:'h3', name:'Carnivore meal log',            cat:'Weight & Diet',    freq:'daily',   type:'once'},
+  {id:'h4', name:'Weekly weigh-in',               cat:'Weight & Diet',    freq:'weekly',  type:'once'},
+  {id:'h5', name:'No Monster / energy drink',    cat:'Energy & Brain',   freq:'daily',   type:'once'},
+  {id:'h6', name:'Coffee + L-theanine',          cat:'Energy & Brain',   freq:'daily',   type:'once'},
+  {id:'h7', name:'5-min Wim Hof breathing',      cat:'Energy & Brain',   freq:'daily',   type:'once'},
+  {id:'h8', name:'Low-dose nicotine (doc-ok)',   cat:'Energy & Brain',   freq:'daily',   type:'once'},
+  {id:'h9', name:'10-min backward walk',         cat:'Knees & Mobility', freq:'daily',   type:'once'},
+  {id:'h10',name:'5-min stretch (hips/shoulders)',cat:'Knees & Mobility',freq:'daily',   type:'once'},
+  {id:'h11',name:'Dead hang 30s',                cat:'Knees & Mobility', freq:'daily',   type:'multi', repGoal:3},
+  {id:'h12',name:'KOT beginner protocol',        cat:'Knees & Mobility', freq:'daily',   type:'once'},
+  {id:'h13',name:'5-min prayer / meditation',    cat:'Mind & Life',      freq:'daily',   type:'once'},
+  {id:'h14',name:'Phone-free walk',              cat:'Mind & Life',      freq:'daily',   type:'once'},
+  {id:'h15',name:'Fixed betting review',         cat:'Mind & Life',      freq:'daily',   type:'once'},
+  {id:'h16',name:'1-hr invention time',          cat:'Mind & Life',      freq:'daily',   type:'once'},
+  {id:'h17',name:'Baking soda water',            cat:'Extras',           freq:'daily',   type:'multi', repGoal:2},
+  {id:'h18',name:'Posture check',                cat:'Extras',           freq:'daily',   type:'multi', repGoal:3},
+  {id:'h19',name:'Daily steps goal (10k)',       cat:'Steps & Walks',    freq:'daily',   type:'once'},
+  {id:'h20',name:'GPS walk / run',               cat:'Steps & Walks',    freq:'daily',   type:'once'},
+];
+
+const QUOTES = [
+  '"Beast mode — stacking wins every single day."',
+  '"Success is built brick by brick, habit by habit."',
+  '"The body achieves what the mind believes."',
+  '"Discipline is freedom. Show up every day."',
+  '"Every rep, every step — compounding forever."',
+  '"Small daily improvements lead to staggering results."',
+  '"Win the morning, win the day."'
+];
+
+// ── STATE ──────────────────────────────────────────────
+let S = {};
+const td = () => new Date().toISOString().slice(0,10);
+
+function load() {
+  try { S = JSON.parse(localStorage.getItem(KEY)) || {}; } catch { S = {}; }
+  S.habits   = S.habits   || DEFAULTS.map(h=>({...h}));
+  S.comp     = S.comp     || {};
+  S.ctime    = S.ctime    || {};
+  S.streaks  = S.streaks  || {};
+  S.wlog     = S.wlog     || [];   // [{date,val}] in lbs
+  S.steps    = S.steps    || {};   // {date: count}
+  S.walks    = S.walks    || [];   // [{date, mi, secs, steps}]
+  S.perf     = S.perf     || 0;
+  S.start    = S.start    || td();
+  S.last     = S.last     || td();
+  S.name     = S.name     || 'Champ';
+  S.openCats = S.openCats || {};
+}
+function save() { localStorage.setItem(KEY, JSON.stringify(S)); }
+
+// ── INIT ───────────────────────────────────────────────
+function init() {
+  load();
+  checkReset();
+  renderGreet();
+  renderCats();
+  renderAddTab();
+  renderChart();
+  updateStats();
+  initStepCounter();
+  renderWalkHist();
+  midnight();
+  pwa();
+}
+
+// ── NAV ────────────────────────────────────────────────
+function sw(v) {
+  document.querySelectorAll('.view').forEach(e=>e.classList.remove('active'));
+  document.querySelectorAll('.nb').forEach(e=>e.classList.remove('on'));
+  document.getElementById('view-'+v).classList.add('active');
+  document.getElementById('nb-'+v).classList.add('on');
+  if (v==='progress') renderProg();
+  hap(10);
+}
+
+// ── GREETING ───────────────────────────────────────────
+function renderGreet() {
+  const hr = new Date().getHours();
+  const g  = hr<12?'Good morning':hr<17?'Good afternoon':'Good evening';
+  document.getElementById('gt-lbl').textContent  = g;
+  document.getElementById('gt-name').textContent = S.name;
+  const dayX = Math.floor((Date.now()-new Date(S.start+'T12:00:00'))/86400000)+1;
+  document.getElementById('gt-day').textContent  = dayX;
+  document.getElementById('hdr-day').textContent = 'DAY '+dayX;
+  const ts = Object.values(S.streaks).reduce((a,b)=>a+b,0);
+  document.getElementById('gt-streak').textContent = ts;
+}
+
+// ── STATS ──────────────────────────────────────────────
+function updateStats() {
+  const c    = S.comp[td()]||{};
+  const done = S.habits.filter(h=>isDone(h,c)).length;
+  const tot  = S.habits.length;
+  const pct  = tot ? Math.round(done/tot*100) : 0;
+  document.getElementById('qs-done').textContent  = done;
+  document.getElementById('qs-total').textContent = tot;
+  document.getElementById('qs-pct').textContent   = pct+'%';
+  const ts = Object.values(S.streaks).reduce((a,b)=>a+b,0);
+  const el = document.getElementById('gt-streak');
+  if (el) el.textContent = ts;
+}
+
+function isDone(h,c) {
+  if (h.type==='multi') return (c[h.id]||0) >= (h.repGoal||1);
+  return !!c[h.id];
+}
+
+// ── CATEGORIES ─────────────────────────────────────────
+function renderCats() {
+  const con = document.getElementById('catcon');
+  con.innerHTML = '';
+  [...new Set(S.habits.map(h=>h.cat))].forEach(cat => con.appendChild(buildCat(cat)));
+}
+
+function buildCat(cat) {
+  const cfg   = CATS[cat]||{e:'📌'};
+  const habits = S.habits.filter(h=>h.cat===cat);
+  const c      = S.comp[td()]||{};
+  const done   = habits.filter(h=>isDone(h,c)).length;
+  const pct    = habits.length ? Math.round(done/habits.length*100) : 0;
+  const open   = !!S.openCats[cat];
+  const r=13, circ=2*Math.PI*r, off=circ-(pct/100)*circ;
+
+  const b = document.createElement('div');
+  b.className  = 'catb'+(open?' open':'');
+  b.dataset.cat = cat;
+  b.innerHTML = `
+    <div class="cath" onclick="togCat('${esc(cat)}')">
+      <span class="cem">${cfg.e}</span>
+      <span class="cnm">${cat}</span>
+      <div class="crt">
+        <div class="cpr">
+          <svg class="cpsv" viewBox="0 0 34 34" xmlns="http://www.w3.org/2000/svg">
+            <circle class="cpb" cx="17" cy="17" r="${r}"/>
+            <circle class="cpf" cx="17" cy="17" r="${r}"
+              stroke-dasharray="${circ.toFixed(1)}" stroke-dashoffset="${off.toFixed(1)}"/>
+          </svg>
+          <div class="cpn">${pct}</div>
+        </div>
+        <svg class="cchev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+    </div>
+    <div class="catbody">
+      <div id="hl-${slug(cat)}">${habits.map(h=>hrow(h)).join('')}</div>
+      <div class="catfoot">
+        <button class="caddbtn" onclick="openAdd('${esc(cat)}')">
+          <div class="cadic">+</div> Add to ${cat}
+        </button>
+      </div>
+    </div>`;
+  return b;
+}
+
+function hrow(h) {
+  const c    = S.comp[td()]||{};
+  const ct   = S.ctime[td()]||{};
+  const done = isDone(h,c);
+  const reps = typeof c[h.id]==='number' ? c[h.id] : 0;
+  const time = ct[h.id]||'';
+  const sk   = S.streaks[h.id]||0;
+
+  let chk;
+  if (h.type==='multi') {
+    const atGoal = reps>=(h.repGoal||1);
+    chk = `<div class="hcz" onclick="tap('${h.id}')">
+      <div class="hcm">
+        <div class="hcp${atGoal?' done':''}">${atGoal?'✓':'+'}</div>
+        <div class="hcr">${reps}/${h.repGoal||1}</div>
+      </div></div>`;
+  } else {
+    chk = `<div class="hcz" onclick="tap('${h.id}')">
+      <div class="hcb${done?' done':''}"></div></div>`;
+  }
+
+  return `<div class="hr" id="hr-${h.id}">
+    ${chk}
+    <div class="hiz">
+      <div class="hin${done?' done':''}">${h.name}</div>
+      <div class="him">
+        ${sk>0?`<span class="hisk">🔥 ${sk}-day streak</span>`:''}
+        <span class="hifr">${h.freq}</span>
+        ${h.type==='multi'?`<span class="hifr" style="color:var(--neon)">${reps}/${h.repGoal} reps</span>`:''}
+      </div>
+      ${time?`<div class="htime">✓ Done at ${time}</div>`:''}
+    </div>
+    <div class="haz">
+      <button class="hab" onclick="openEdit('${h.id}')">✏️</button>
+      <button class="hab" onclick="askDel('${h.id}')">🗑️</button>
+    </div>
+  </div>`;
+}
+
+function slug(c){ return c.replace(/[^a-z0-9]/gi,'_'); }
+function esc(s){ return s.replace(/'/g,"\\'"); }
+
+function togCat(cat) {
+  const b = document.querySelector(`.catb[data-cat="${cat}"]`);
+  if (!b) return;
+  const o = b.classList.toggle('open');
+  S.openCats[cat] = o; save(); hap(8);
+}
+
+// ── HABIT TAP ──────────────────────────────────────────
+function tap(id) {
+  const h = S.habits.find(x=>x.id===id); if (!h) return;
+  const d = td();
+  if (!S.comp[d])  S.comp[d]  = {};
+  if (!S.ctime[d]) S.ctime[d] = {};
+  const prev = isDone(h, S.comp[d]);
+
+  if (h.type==='multi') {
+    const cur = typeof S.comp[d][id]==='number' ? S.comp[d][id] : 0;
+    if (cur>=(h.repGoal||1)) { S.comp[d][id]=0; delete S.ctime[d][id]; }
+    else {
+      S.comp[d][id] = cur+1;
+      if (S.comp[d][id]===(h.repGoal||1)) S.ctime[d][id] = nowT();
+    }
+  } else {
+    S.comp[d][id] = !S.comp[d][id];
+    if (S.comp[d][id]) S.ctime[d][id] = nowT();
+    else delete S.ctime[d][id];
+  }
+
+  const nowDone = isDone(h, S.comp[d]);
+  if (nowDone && !prev) {
+    const yest = new Date(); yest.setDate(yest.getDate()-1);
+    const ys = yest.toISOString().slice(0,10);
+    S.streaks[id] = isDone(h, S.comp[ys]||{}) ? (S.streaks[id]||0)+1 : 1;
+  } else if (!nowDone && prev) {
+    S.streaks[id] = Math.max(0,(S.streaks[id]||1)-1);
+  }
+
+  save(); hap(nowDone?20:10);
+  const el = document.getElementById('hr-'+id);
+  if (el) el.outerHTML = hrow(h);
+  updCatPct(h.cat);
+  updateStats();
+  checkFull();
+}
+
+function nowT() {
+  const n=new Date();
+  return n.getHours().toString().padStart(2,'0')+':'+n.getMinutes().toString().padStart(2,'0');
+}
+
+function updCatPct(cat) {
+  const b = document.querySelector(`.catb[data-cat="${cat}"]`); if (!b) return;
+  const habits = S.habits.filter(h=>h.cat===cat);
+  const c = S.comp[td()]||{};
+  const done = habits.filter(h=>isDone(h,c)).length;
+  const pct = habits.length ? Math.round(done/habits.length*100) : 0;
+  const r=13,circ=2*Math.PI*r,off=circ-(pct/100)*circ;
+  const fg=b.querySelector('.cpf'); if(fg) fg.style.strokeDashoffset=off.toFixed(1);
+  const nm=b.querySelector('.cpn'); if(nm) nm.textContent=pct;
+}
+
+function checkFull() {
+  const c = S.comp[td()]||{};
+  if (S.habits.every(h=>isDone(h,c))) {
+    S.perf=(S.perf||0)+1; save();
+    showConfetti();
+    toast('🏆','Beast Mode!','All habits crushed — stacking wins!');
+  }
+}
+
+// ── WEIGHT ─────────────────────────────────────────────
+function logWeight() {
+  const v = parseFloat(document.getElementById('win').value);
+  if (!v||v<50||v>700) { toast('⚠️','Invalid','Enter 50–700 lbs'); return; }
+  S.wlog = S.wlog.filter(e=>e.date!==td());
+  S.wlog.push({date:td(),val:v});
+  S.wlog.sort((a,b)=>a.date.localeCompare(b.date));
+  if (S.wlog.length>30) S.wlog=S.wlog.slice(-30);
+  save(); renderChart();
+  document.getElementById('win').value='';
+  hap(20); toast('⚖️','Logged!',`${v} lbs recorded`);
+}
+
+function renderChart() {
+  const svg = document.getElementById('wc');
+  const entries = S.wlog.slice(-7);
+  svg.innerHTML = `<defs><linearGradient id="cg" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0%" stop-color="#00ff9d" stop-opacity=".3"/>
+    <stop offset="100%" stop-color="#00ff9d" stop-opacity="0"/>
+  </linearGradient></defs>`;
+  if (entries.length<2) {
+    svg.innerHTML += `<text x="160" y="38" text-anchor="middle" fill="#444" font-size="11" font-family="Barlow,sans-serif">${entries.length===0?'Log weight to see chart':'Log 2+ days to see chart'}</text>`;
+    return;
+  }
+  const W=320,H=70,PX=24,PY=10;
+  const vals=entries.map(e=>e.val);
+  const mn=Math.min(...vals)-1, mx=Math.max(...vals)+1;
+  const xs=(W-PX*2)/(entries.length-1);
+  const pts=entries.map((e,i)=>({x:PX+i*xs,y:PY+(1-(e.val-mn)/(mx-mn))*(H-PY*2)}));
+  const line=pts.map((p,i)=>i===0?`M${p.x},${p.y}`:`L${p.x},${p.y}`).join(' ');
+  const area=line+` L${pts.at(-1).x},${H-PY} L${pts[0].x},${H-PY} Z`;
+  const dots=pts.map((p,i)=>
+    `<circle cx="${p.x}" cy="${p.y}" r="3.5" fill="#00ff9d"/>` +
+    `<text x="${p.x}" y="${p.y-7}" text-anchor="middle" fill="#f0f0f0" font-size="9" font-family="Barlow Condensed,sans-serif" font-weight="700">${entries[i].val}</text>`
+  ).join('');
+  const lbls=pts.map((p,i)=>{
+    const d=new Date(entries[i].date+'T12:00:00');
+    return `<text x="${p.x}" y="${H-1}" text-anchor="middle" fill="#555" font-size="9" font-family="Barlow,sans-serif">${d.toLocaleDateString('en',{weekday:'short'}).slice(0,2)}</text>`;
+  }).join('');
+  svg.innerHTML += `<path d="${area}" fill="url(#cg)"/>
+    <path d="${line}" fill="none" stroke="#00ff9d" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+    ${dots}${lbls}`;
+}
+
+// ════════════════════════════════════════════════════════
+//   STEP COUNTER — DeviceMotion peak detection
+// ════════════════════════════════════════════════════════
+let stepCount  = 0;
+let lastMag    = 0;
+let lastStepT  = 0;
+let motionOn   = false;
+
+// Step threshold — increase if too sensitive, decrease if misses steps
+const STEP_THRESH = 1.2;
+const STEP_MIN_MS = 250; // minimum ms between counted steps
+
+function initStepCounter() {
+  stepCount = S.steps[td()] || 0;
+  updStepUI();
+
+  if (typeof DeviceMotionEvent === 'undefined') {
+    // No motion API (desktop) — that's fine
+    return;
+  }
+
+  if (typeof DeviceMotionEvent.requestPermission === 'function') {
+    // iOS 13+ — must prompt
+    document.getElementById('motion-banner').style.display='flex';
+  } else {
+    // Android / non-iOS — start immediately
+    startMotion();
+  }
+}
+
+function reqMotion() {
+  DeviceMotionEvent.requestPermission()
+    .then(r => {
+      if (r==='granted') { startMotion(); document.getElementById('motion-banner').style.display='none'; }
+      else toast('❌','Denied','Motion permission denied. Steps won\'t count.');
+    })
+    .catch(err => { console.warn(err); toast('❌','Error','Could not request motion permission.'); });
+}
+
+function startMotion() {
+  if (motionOn) return;
+  window.addEventListener('devicemotion', onMotion, {passive:true});
+  motionOn = true;
+}
+
+function onMotion(e) {
+  const a = e.accelerationIncludingGravity;
+  if (!a) return;
+  // Magnitude of acceleration vector
+  const mag = Math.sqrt((a.x||0)**2 + (a.y||0)**2 + (a.z||0)**2);
+  const now  = Date.now();
+  // Peak detection: rising edge crosses threshold with min interval
+  if (mag - lastMag > STEP_THRESH && now - lastStepT > STEP_MIN_MS) {
+    stepCount++;
+    lastStepT = now;
+    if (stepCount % 5 === 0) { S.steps[td()] = stepCount; save(); }
+    updStepUI();
+  }
+  lastMag = mag;
+}
+
+function updStepUI() {
+  const s  = stepCount;
+  const mi = (s * FT_STEP / FT_MI).toFixed(2);
+  // Ring
+  const circ = 232.5;
+  const pct  = Math.min(s / STEP_G, 1);
+  document.getElementById('sring').style.strokeDashoffset = (circ - pct*circ).toFixed(1);
+  // Display
+  document.getElementById('sdisp').textContent = s>=1000 ? (s/1000).toFixed(1)+'k' : s;
+  document.getElementById('wl-steps').textContent = s.toLocaleString();
+  // Only update distance display from steps when NOT walking (GPS walk overrides)
+  if (!walkActive) {
+    document.getElementById('wl-dist').textContent = mi;
+  }
+}
+
+// ════════════════════════════════════════════════════════
+//   WALK / RUN GPS TRACKER
+//   Fixed approach:
+//   1) Use watchPosition with high accuracy
+//   2) Filter out low-accuracy and tiny jitter moves
+//   3) Accumulate distance properly using Haversine
+//   4) Show real-time pace, accuracy, point count
+//   5) Handle all error cases gracefully
+// ════════════════════════════════════════════════════════
+let walkActive  = false;
+let watchId     = null;
+let walkMiles   = 0;
+let walkSecs    = 0;
+let walkTick    = null;
+let walkStepStart = 0;  // steps at walk start (to count walk-specific steps)
+let gpsPoints   = 0;
+let lastGPS     = null; // {lat, lng, timestamp}
+let walkStartT  = 0;
+
+function handleWalkBtn() {
+  if (!walkActive) startWalk();
+  else stopWalk();
+}
+
+function startWalk() {
+  // Check geolocation availability
+  if (!navigator.geolocation) {
+    setStatus('GPS not available on this device.', 'error');
+    return;
+  }
+
+  const btn = document.getElementById('wbtn');
+  btn.disabled = true;
+  btn.textContent = '⏳ Getting GPS…';
+  setStatus('Acquiring GPS signal — please wait outdoors for best accuracy…', 'active');
+  setGPSDot('');
+
+  // Request a one-time fix first to verify permission
+  navigator.geolocation.getCurrentPosition(
+    (pos) => {
+      // Permission granted and first fix obtained
+      walkActive    = true;
+      walkMiles     = 0;
+      walkSecs      = 0;
+      walkStepStart = stepCount;
+      gpsPoints     = 0;
+      lastGPS       = null;
+      walkStartT    = Date.now();
+
+      btn.disabled  = false;
+      btn.textContent = '■ Stop Walk / Run';
+      btn.className = 'bwalk stop';
+      hap(30);
+
+      // Update GPS dot with first fix accuracy
+      updateGPSInfo(pos);
+
+      // Now start continuous watch
+      watchId = navigator.geolocation.watchPosition(
+        onGPS,
+        onGPSError,
+        {
+          enableHighAccuracy: true,
+          maximumAge: 0,         // always fresh position
+          timeout: 10000         // 10s timeout per update
+        }
+      );
+
+      // Timer tick every second
+      walkTick = setInterval(() => {
+        walkSecs++;
+        updWalkUI();
+      }, 1000);
+
+      // Show accuracy panel
+      document.getElementById('acc-hint').style.display='block';
+    },
+    (err) => {
+      btn.disabled   = false;
+      btn.textContent = '▶ Start Walk / Run';
+      btn.className  = 'bwalk go';
+      handleGeoError(err);
+    },
+    { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
+  );
+}
+
+function onGPS(pos) {
+  updateGPSInfo(pos);
+
+  const lat = pos.coords.latitude;
+  const lng = pos.coords.longitude;
+  const acc = pos.coords.accuracy; // meters
+
+  // Reject low-accuracy points
+  if (acc > MIN_ACC_M) {
+    setStatus(`Waiting for better GPS signal… (accuracy: ${Math.round(acc*3.281)} ft)`, 'active');
+    return;
+  }
+
+  if (!lastGPS) {
+    // First good point — just store it
+    lastGPS = {lat, lng, ts: Date.now()};
+    gpsPoints = 1;
+    setStatus('GPS locked! Moving now…', 'active');
+    document.getElementById('pts-val').textContent = gpsPoints;
+    return;
+  }
+
+  // Calculate distance from last point in meters
+  const distM = haversineM(lastGPS.lat, lastGPS.lng, lat, lng);
+
+  // Filter out GPS jitter (tiny movements that aren't real)
+  if (distM < MIN_DIST_M) return;
+
+  // Sanity check: if distance is impossibly large (>200m per update), skip
+  const dt = (Date.now() - lastGPS.ts) / 1000; // seconds
+  const speedMS = distM / dt; // meters per second
+  if (speedMS > 12) { // ~27 mph max — faster means bad GPS jump
+    lastGPS = {lat, lng, ts: Date.now()};
+    return;
+  }
+
+  // Good point — accumulate
+  const distMi = distM / 1609.344;
+  walkMiles += distMi;
+  gpsPoints++;
+  lastGPS = {lat, lng, ts: Date.now()};
+
+  document.getElementById('pts-val').textContent = gpsPoints;
+  updWalkUI();
+}
+
+function onGPSError(err) {
+  handleGeoError(err);
+}
+
+function handleGeoError(err) {
+  let msg = '';
+  switch(err.code) {
+    case 1: msg = 'Location access denied. Please allow location in Settings → Safari → Location.'; break;
+    case 2: msg = 'GPS signal unavailable. Try stepping outside.'; break;
+    case 3: msg = 'GPS timed out. Make sure location is enabled.'; break;
+    default: msg = 'GPS error. Please try again.';
+  }
+  setStatus(msg, 'error');
+  setGPSDot('bad');
+  // Don't stop the walk — keep trying
+}
+
+function updateGPSInfo(pos) {
+  const acc = pos.coords.accuracy; // meters
+  const accFt = Math.round(acc * 3.281);
+  document.getElementById('acc-val').textContent = accFt;
+  const dot = acc<=10?'good':acc<=30?'ok':'bad';
+  const txt = acc<=10?'Excellent':acc<=30?'Good':'Weak';
+  setGPSDot(dot);
+  document.getElementById('gps-txt').textContent = txt+` (±${accFt} ft)`;
+}
+
+function setGPSDot(cls) {
+  const d = document.getElementById('gps-dot');
+  d.className = 'gps-dot' + (cls?' '+cls:'');
+}
+
+function updWalkUI() {
+  // Time
+  const m = Math.floor(walkSecs/60).toString().padStart(2,'0');
+  const s = (walkSecs%60).toString().padStart(2,'0');
+  document.getElementById('wl-time').textContent = m+':'+s;
+
+  // Distance
+  const miStr = walkMiles.toFixed(2);
+  document.getElementById('wl-dist').textContent = miStr;
+  document.getElementById('wl-walkdist').innerHTML = `${miStr} <small>mi</small>`;
+
+  // Pace (min per mile)
+  if (walkMiles > 0.05 && walkSecs > 0) {
+    const minPerMi = (walkSecs/60) / walkMiles;
+    const pm = Math.floor(minPerMi);
+    const ps = Math.round((minPerMi-pm)*60).toString().padStart(2,'0');
+    document.getElementById('wl-pace').innerHTML = `${pm}:${ps} <small>min/mi</small>`;
+  }
+
+  // Steps during walk
+  const walkSteps = stepCount - walkStepStart;
+  document.getElementById('wl-steps').textContent = stepCount.toLocaleString();
+
+  setStatus(`🏃 Active — ${miStr} mi · ${m}:${s}`, 'active');
+}
+
+function stopWalk() {
+  walkActive = false;
+
+  if (watchId !== null) {
+    navigator.geolocation.clearWatch(watchId);
+    watchId = null;
+  }
+  clearInterval(walkTick);
+  document.getElementById('acc-hint').style.display='none';
+  hap(25);
+
+  const btn = document.getElementById('wbtn');
+  btn.textContent = '▶ Start Walk / Run';
+  btn.className   = 'bwalk go';
+  btn.disabled    = false;
+
+  setGPSDot('');
+  document.getElementById('gps-txt').textContent = 'Not active';
+
+  if (walkMiles >= 0.01) {
+    const walkSteps = stepCount - walkStepStart;
+    S.walks.push({
+      date: td(),
+      mi:   parseFloat(walkMiles.toFixed(2)),
+      secs: walkSecs,
+      steps: walkSteps
+    });
+    S.steps[td()] = stepCount;
+    save();
+    renderWalkHist();
+
+    const m=Math.floor(walkSecs/60), sec=(walkSecs%60).toString().padStart(2,'0');
+    setStatus(`✅ Walk saved: ${walkMiles.toFixed(2)} mi in ${m}:${sec}`, '');
+    toast('🏆','Walk Complete!',`${walkMiles.toFixed(2)} mi logged — great work!`);
+  } else {
+    setStatus('Walk too short to save. Tap to try again.', '');
+    if (gpsPoints < 3) {
+      setStatus('Not enough GPS points captured. Try outdoors with clear sky.', 'error');
+    }
+  }
+
+  // Reset for next walk
+  walkMiles = 0;
+  walkSecs  = 0;
+  gpsPoints = 0;
+  lastGPS   = null;
+  document.getElementById('wl-time').textContent   = '0:00';
+  document.getElementById('wl-pace').innerHTML     = '–– <small>min/mi</small>';
+  document.getElementById('wl-walkdist').innerHTML = '0.00 <small>mi</small>';
+}
+
+function setStatus(msg, type) {
+  const el = document.getElementById('wstatus');
+  el.textContent = msg;
+  el.className = 'walk-status-bar' + (type?' '+type:'');
+}
+
+function renderWalkHist() {
+  const el  = document.getElementById('walk-hist');
+  const all = [...S.walks].reverse().slice(0,5);
+  if (!all.length) { el.innerHTML=''; return; }
+  el.innerHTML = `<div class="wh-title">Recent Walks</div>` +
+    all.map(w => {
+      const d   = new Date(w.date+'T12:00:00');
+      const lbl = d.toLocaleDateString('en',{weekday:'short',month:'short',day:'numeric'});
+      const m   = Math.floor((w.secs||0)/60), s=((w.secs||0)%60).toString().padStart(2,'0');
+      const time= w.secs ? ` · ${m}:${s}` : '';
+      return `<div class="wh-row">
+        <span class="wh-date">${lbl}${time}</span>
+        <span class="wh-val">${w.mi} mi</span>
+      </div>`;
+    }).join('');
+}
+
+// ── HAVERSINE (returns meters) ──────────────────────────
+function haversineM(la1,lo1,la2,lo2) {
+  const R=6371000, d2r=Math.PI/180;
+  const dLa=(la2-la1)*d2r, dLo=(lo2-lo1)*d2r;
+  const a=Math.sin(dLa/2)**2+Math.cos(la1*d2r)*Math.cos(la2*d2r)*Math.sin(dLo/2)**2;
+  return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+}
+
+// ── ADD / EDIT ─────────────────────────────────────────
+let rm='once', eid=null;
+
+function setRM(m) {
+  rm=m;
+  document.getElementById('tog-once').className='togo'+(m==='once'?' sel':'');
+  document.getElementById('tog-multi').className='togo'+(m==='multi'?' sel':'');
+  document.getElementById('rg').style.display=m==='multi'?'block':'none';
+}
+
+function openAdd(cat) {
+  eid=null;
+  document.getElementById('hs-title').textContent='New Habit';
+  document.getElementById('hs-id').value='';
+  document.getElementById('hs-name').value='';
+  if (cat) document.getElementById('hs-cat').value=cat;
+  document.getElementById('hs-freq').value='daily';
+  setRM('once');
+  document.getElementById('hs-reps').value=3;
+  document.getElementById('hs-btns').innerHTML=
+    `<button class="sbc" onclick="closeS('hsheet')">Cancel</button>
+     <button class="sbs" onclick="saveH()">Save</button>`;
+  openS('hsheet');
+}
+
+function openEdit(id) {
+  const h = S.habits.find(x=>x.id===id); if (!h) return;
+  eid=id;
+  document.getElementById('hs-title').textContent='Edit Habit';
+  document.getElementById('hs-id').value=id;
+  document.getElementById('hs-name').value=h.name;
+  document.getElementById('hs-cat').value=h.cat;
+  document.getElementById('hs-freq').value=h.freq;
+  setRM(h.type||'once');
+  document.getElementById('hs-reps').value=h.repGoal||3;
+  document.getElementById('hs-btns').innerHTML=
+    `<button class="sbc" onclick="closeS('hsheet')">Cancel</button>
+     <button class="sbs" onclick="saveH()">Update</button>`;
+  openS('hsheet');
+}
+
+function saveH() {
+  const name=document.getElementById('hs-name').value.trim();
+  if (!name) { document.getElementById('hs-name').focus(); return; }
+  const cat=document.getElementById('hs-cat').value;
+  const freq=document.getElementById('hs-freq').value;
+  const repGoal=parseInt(document.getElementById('hs-reps').value)||3;
+  if (eid) {
+    const h=S.habits.find(x=>x.id===eid);
+    if (h) { h.name=name; h.cat=cat; h.freq=freq; h.type=rm; if(rm==='multi') h.repGoal=repGoal; else delete h.repGoal; }
+  } else {
+    S.habits.push({id:'h_'+Date.now(),name,cat,freq,type:rm,...(rm==='multi'?{repGoal}:{})});
+  }
+  save(); closeS('hsheet'); renderCats(); updateStats(); hap(20);
+  setTimeout(()=>{
+    const b=document.querySelector(`.catb[data-cat="${cat}"]`);
+    if (b&&!b.classList.contains('open')) togCat(cat);
+  },200);
+  if (!eid) sw('home');
+}
+
+// ── DELETE ─────────────────────────────────────────────
+let delId=null;
+function askDel(id) {
+  delId=id;
+  const h=S.habits.find(x=>x.id===id);
+  document.getElementById('del-nm').textContent=h?h.name:'this habit';
+  openS('dsheet');
+}
+function doDelete() {
+  if (!delId) return;
+  const h=S.habits.find(x=>x.id===delId);
+  S.habits=S.habits.filter(x=>x.id!==delId);
+  delete S.streaks[delId];
+  Object.values(S.comp).forEach(c=>delete c[delId]);
+  Object.values(S.ctime).forEach(c=>delete c[delId]);
+  save(); closeS('dsheet'); renderCats(); updateStats(); hap(25);
+  toast('🗑️','Deleted',`"${h?.name||'Habit'}" removed.`);
+}
+
+// ── ADD TAB ────────────────────────────────────────────
+function renderAddTab() {
+  document.getElementById('acl').innerHTML=Object.entries(CATS).map(([cat,cfg])=>
+    `<button class="acb" onclick="openAdd('${esc(cat)}')">${cfg.e} ${cat}</button>`
+  ).join('');
+}
+
+// ── SHEETS ─────────────────────────────────────────────
+function openS(id) { document.getElementById(id).classList.add('open'); hap(10); }
+function closeS(id){ document.getElementById(id).classList.remove('open'); eid=null; }
+function sbg(e,id) { if(e.target===document.getElementById(id)) closeS(id); }
+
+// ── PROGRESS ───────────────────────────────────────────
+function renderProg() {
+  const c=S.comp[td()]||{};
+  const tot=S.habits.length;
+  const done=S.habits.filter(h=>isDone(h,c)).length;
+  const pct=tot?Math.round(done/tot*100):0;
+  const ts=Object.values(S.streaks).reduce((a,b)=>a+b,0);
+  let wkD=0,wkT=0;
+  for(let i=0;i<7;i++){
+    const d=new Date(); d.setDate(d.getDate()-i);
+    const ds=d.toISOString().slice(0,10);
+    const cc=S.comp[ds]||{};
+    S.habits.forEach(h=>{wkT++;if(isDone(h,cc))wkD++;});
+  }
+  const wkP=wkT?Math.round(wkD/wkT*100):0;
+  document.getElementById('p-str').textContent=ts;
+  document.getElementById('p-done').textContent=done;
+  document.getElementById('p-tot').textContent=tot;
+  document.getElementById('p-wk').textContent=wkD;
+  document.getElementById('p-perf').textContent=S.perf||0;
+  document.getElementById('p-pct').textContent=pct+'%';
+  document.getElementById('p-fill').style.width=pct+'%';
+  document.getElementById('p-wpct').textContent=wkP+'%';
+  document.getElementById('p-wfill').style.width=wkP+'%';
+  document.getElementById('pcats').innerHTML=Object.entries(CATS).map(([cat,cfg])=>{
+    const hs=S.habits.filter(h=>h.cat===cat); if(!hs.length) return '';
+    const cd=hs.filter(h=>isDone(h,c)).length;
+    const cp=hs.length?Math.round(cd/hs.length*100):0;
+    return `<div class="pcr">
+      <div class="pce">${cfg.e}</div>
+      <div class="pci"><div class="pcin">${cat}</div>
+        <div class="pct"><div class="pcf" style="width:${cp}%"></div></div>
+      </div>
+      <div class="pcp">${cp}%</div>
+    </div>`;
+  }).join('');
+  document.getElementById('pquote').textContent=QUOTES[new Date().getDay()%QUOTES.length];
+}
+
+// ── DAILY RESET ────────────────────────────────────────
+function checkReset() {
+  const d=td();
+  if (S.last && S.last!==d) {
+    const yc=S.comp[S.last]||{};
+    S.habits.forEach(h=>{ if(!isDone(h,yc)) S.streaks[h.id]=0; });
+    stepCount=0;
+  }
+  S.last=d; save();
+}
+function midnight() {
+  const n=new Date(), m=new Date(n);
+  m.setHours(24,0,1,0);
+  setTimeout(()=>{ checkReset(); renderCats(); updateStats(); renderGreet(); midnight(); }, m-n);
+}
+
+// ── CONFETTI ───────────────────────────────────────────
+function showConfetti() {
+  const c=document.getElementById('confetti');
+  c.style.display='block'; c.width=innerWidth; c.height=innerHeight;
+  const ctx=c.getContext('2d');
+  const COLS=['#00ff9d','#ffb300','#ff3d5a','#29b6f6','#fff','#c77dff'];
+  const P=Array.from({length:80},()=>({
+    x:Math.random()*c.width,y:-20-Math.random()*80,
+    r:3+Math.random()*6,col:COLS[Math.floor(Math.random()*COLS.length)],
+    vx:-2.5+Math.random()*5,vy:3+Math.random()*5,
+    a:Math.random()*Math.PI*2,va:.06+Math.random()*.1,sq:Math.random()>.5
+  }));
+  let f=0;
+  (function loop(){
+    ctx.clearRect(0,0,c.width,c.height);
+    P.forEach(p=>{
+      p.x+=p.vx;p.y+=p.vy;p.a+=p.va;p.vy+=.09;
+      ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.a);
+      ctx.globalAlpha=Math.max(0,1-f/130);ctx.fillStyle=p.col;
+      if(p.sq)ctx.fillRect(-p.r,-p.r/2,p.r*2,p.r);
+      else{ctx.beginPath();ctx.arc(0,0,p.r,0,Math.PI*2);ctx.fill();}
+      ctx.restore();
+    });
+    f++;
+    if(f<160)requestAnimationFrame(loop);
+    else{c.style.display='none';}
+  })();
+}
+
+// ── TOAST ──────────────────────────────────────────────
+let toastT=null;
+function toast(icon,title,msg) {
+  const t=document.getElementById('toast');
+  document.getElementById('ti').textContent=icon;
+  document.getElementById('tt').textContent=title;
+  document.getElementById('tm').textContent=msg;
+  t.classList.add('show');
+  clearTimeout(toastT);
+  toastT=setTimeout(()=>t.classList.remove('show'),3500);
+}
+
+// ── HAPTIC ─────────────────────────────────────────────
+function hap(ms=10){ if(navigator.vibrate) navigator.vibrate(ms); }
+
+// ── PWA ────────────────────────────────────────────────
+function pwa() {
+  const m={name:'HabitForge',short_name:'HabitForge',description:'Your daily habit forge.',
+    start_url:'/',display:'standalone',orientation:'portrait',
+    background_color:'#0d0d0d',theme_color:'#0d0d0d',
+    icons:[{src:mkIcon(192),sizes:'192x192',type:'image/png',purpose:'any maskable'},
+           {src:mkIcon(512),sizes:'512x512',type:'image/png',purpose:'any maskable'}]};
+  const b=new Blob([JSON.stringify(m)],{type:'application/json'});
+  let l=document.querySelector('link[rel="manifest"]');
+  if(!l){l=document.createElement('link');l.rel='manifest';document.head.appendChild(l);}
+  l.href=URL.createObjectURL(b);
+
+  if (!('serviceWorker' in navigator)) return;
+  const sw=`const C='hfv6';
+self.addEventListener('install',e=>{e.waitUntil(caches.open(C).then(c=>c.addAll([self.location.pathname])));self.skipWaiting();});
+self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==C).map(k=>caches.delete(k)))));self.clients.claim();});
+self.addEventListener('fetch',e=>{e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).catch(()=>caches.match(e.request))));});`;
+  navigator.serviceWorker.register(
+    URL.createObjectURL(new Blob([sw],{type:'application/javascript'})),{scope:'/'}
+  ).catch(()=>{});
+}
+
+function mkIcon(sz) {
+  const c=document.createElement('canvas');c.width=c.height=sz;
+  const ctx=c.getContext('2d');
+  ctx.fillStyle='#0d0d0d';ctx.fillRect(0,0,sz,sz);
+  ctx.fillStyle='#00ff9d';ctx.font=`bold ${sz*.6}px serif`;
+  ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillText('⚡',sz/2,sz/2);
+  return c.toDataURL();
+}
+
+// ── BOOT ───────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>
